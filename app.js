@@ -112,10 +112,24 @@ function render() {
 
     const details = document.createElement("div");
     details.className = "details";
-    details.textContent =
-      (READER_LABELS[book.reader] || book.reader) + " · " +
-      (STATUS_LABELS[book.status] || book.status);
+    details.textContent = READER_LABELS[book.reader] || book.reader;
     item.appendChild(details);
+
+    const statusSelect = document.createElement("select");
+    statusSelect.setAttribute("aria-label", "Status of " + book.title);
+    Object.keys(STATUS_LABELS).forEach(function (value) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = STATUS_LABELS[value];
+      statusSelect.appendChild(option);
+    });
+    statusSelect.value = book.status;
+    statusSelect.addEventListener("change", function () {
+      book.status = statusSelect.value;
+      saveBooks(books);
+      render();
+    });
+    item.appendChild(statusSelect);
 
     const removeButton = document.createElement("button");
     removeButton.type = "button";
