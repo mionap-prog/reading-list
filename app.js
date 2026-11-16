@@ -62,10 +62,13 @@ tabButtons.forEach(function (button) {
 });
 
 const STATUS_LABELS = {
-  "to-read": "To read",
+  "to-read": "Want to read",
   "reading": "Reading",
-  "finished": "Finished"
+  "finished": "Read"
 };
+
+// Order of the groups in the list: Reading, then Want to read, then Read.
+const STATUS_ORDER = { "reading": 0, "to-read": 1, "finished": 2 };
 
 // Removes a book by id after the user confirms.
 function removeBook(id) {
@@ -86,6 +89,12 @@ function render() {
 
   const visibleBooks = books.filter(function (book) {
     return currentTab === "all" || book.reader === currentTab;
+  });
+
+  // filter() made a copy, so sorting does not change the saved order.
+  // Array sort is stable: books in the same group keep their order.
+  visibleBooks.sort(function (a, b) {
+    return (STATUS_ORDER[a.status] ?? 3) - (STATUS_ORDER[b.status] ?? 3);
   });
 
   if (visibleBooks.length === 0) {
