@@ -29,6 +29,34 @@ function saveBooks(list) {
 let books = loadBooks();
 
 const bookList = document.getElementById("book-list");
+const tabButtons = document.querySelectorAll("#tabs button");
+
+// Which tab is selected: "all", "me" or "daughter".
+let currentTab = "all";
+
+// Marks the selected tab for styling and screen readers.
+function updateTabs() {
+  tabButtons.forEach(function (button) {
+    const isActive = button.dataset.reader === currentTab;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+}
+
+// Makes the form's reader dropdown match the selected tab (stays as is on "All").
+function syncReaderSelect() {
+  if (currentTab !== "all") {
+    readerSelect.value = currentTab;
+  }
+}
+
+tabButtons.forEach(function (button) {
+  button.addEventListener("click", function () {
+    currentTab = button.dataset.reader;
+    syncReaderSelect();
+    render();
+  });
+});
 
 const READER_LABELS = { me: "Me", daughter: "Daughter" };
 const STATUS_LABELS = {
@@ -51,17 +79,24 @@ function removeBook(id) {
 
 // Draws the book list on the page. Typed text is always set with textContent.
 function render() {
+  updateTabs();
   bookList.replaceChildren();
 
-  if (books.length === 0) {
+  const visibleBooks = books.filter(function (book) {
+    return currentTab === "all" || book.reader === currentTab;
+  });
+
+  if (visibleBooks.length === 0) {
     const empty = document.createElement("li");
     empty.className = "empty";
-    empty.textContent = "No books yet. Add your first one above.";
+    empty.textContent = books.length === 0
+      ? "No books yet. Add your first one above."
+      : "No books here yet.";
     bookList.appendChild(empty);
     return;
   }
 
-  books.forEach(function (book) {
+  visibleBooks.forEach(function (book) {
     const item = document.createElement("li");
     item.className = "book";
 
@@ -122,6 +157,7 @@ addForm.addEventListener("submit", function (event) {
   render();
 
   addForm.reset();
+  syncReaderSelect();
   titleInput.focus();
 });
 
