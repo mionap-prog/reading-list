@@ -98,6 +98,13 @@ const STATUS_LABELS = {
 // Order of the groups in the list: Reading, then Want to read, then Read.
 const STATUS_ORDER = { "reading": 0, "to-read": 1, "finished": 2 };
 
+// Display labels for the ownership values. Old books have "" and show nothing.
+const OWNERSHIP_LABELS = {
+  "owned": "Owned",
+  "borrowed": "Borrowed",
+  "library": "Library"
+};
+
 // Removes a book by id after the user confirms.
 function removeBook(id) {
   const book = books.find(function (b) { return b.id === id; });
@@ -152,7 +159,11 @@ function render() {
 
     const details = document.createElement("div");
     details.className = "details";
-    details.textContent = READER_NAMES[book.reader] || book.reader;
+    const detailParts = [READER_NAMES[book.reader] || book.reader];
+    if (OWNERSHIP_LABELS[book.ownership]) {
+      detailParts.push(OWNERSHIP_LABELS[book.ownership]);
+    }
+    details.textContent = detailParts.join(" · ");
     item.appendChild(details);
 
     const statusSelect = document.createElement("select");
@@ -218,6 +229,7 @@ const addForm = document.getElementById("add-form");
 const titleInput = document.getElementById("title");
 const authorInput = document.getElementById("author");
 const readerSelect = document.getElementById("reader");
+const ownershipSelect = document.getElementById("ownership");
 
 // Fill in the reader names on the tabs, the form dropdown and the intro line.
 // Falls back to the stored value if a name is missing.
@@ -247,6 +259,9 @@ addForm.addEventListener("submit", function (event) {
     author: authorInput.value.trim(),
     reader: readerSelect.value,
     status: "to-read",
+    ownership: ownershipSelect.value,
+    startDate: "",
+    endDate: "",
     rating: 0,
     note: ""
   });
