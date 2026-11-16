@@ -37,7 +37,26 @@ Books are saved in localStorage under the key `readinglist.books` as an array of
 
 `loadBooks()` runs `migrateBooks()`, which fills in missing `ownership`, `startDate` and `endDate` on old books. Before the first upgrade it copies the raw saved text to `readinglist.books.backup`.
 
-Use `loadBooks()` and `saveBooks()` in `app.js` to read and write the data. Don't call localStorage directly elsewhere.
+### Other storage keys
+
+- `readinglist.books.backup`: a copy of the raw saved books text, written once before the first upgrade.
+- `readinglist.goals`: yearly reading goals, `{ "me": { "2026": 30 }, "daughter": { ... } }`. Keys are years (`YYYY`) and values are whole numbers from 1 to 999. Old years stay stored, but only the current year is shown.
+
+### Reader names
+
+`"me"` and `"daughter"` are the stored values. Miona and Sena are display labels only, set in `READER_NAMES` in `app.js`. Never store the names in localStorage.
+
+### Date rules
+
+- Dates are `"YYYY-MM-DD"` text. "Today" is built from local time (not `toISOString()`, which uses UTC).
+- In the edit dialog: switching to Reading fills `startDate` with today if empty and clears `endDate`. Switching to Read fills `endDate` with today if empty. Switching to Want to read clears both dates. A Read book keeps its start date.
+- `endDate` is shown and editable only for Read books. It cannot be before `startDate`.
+- A book counts toward the yearly challenge when it is Read and its `endDate` starts with the current year. Old Read books with no `endDate` don't count.
+- The list shows "Read in N days" for Read books with both dates, counting both days.
+
+### Reading and writing data
+
+Use `loadBooks()` and `saveBooks()` in `app.js` to read and write books, and `loadGoals()` and `saveGoals()` for goals. Don't call localStorage directly elsewhere.
 
 ## Rules
 
