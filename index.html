@@ -9,7 +9,7 @@
 <body>
   <main>
     <h1>Reading List</h1>
-    <p>Books for me and my daughter, all in one place.</p>
+    <p id="intro">Books for Miona and Sena</p>
 
     <form id="add-form">
       <label for="title">Title</label>
@@ -20,8 +20,8 @@
 
       <label for="reader">Reader</label>
       <select id="reader">
-        <option value="me">Me</option>
-        <option value="daughter">Daughter</option>
+        <option value="me">Miona</option>
+        <option value="daughter">Sena</option>
       </select>
 
       <button type="submit">Add book</button>
@@ -29,8 +29,8 @@
 
     <div id="tabs" role="tablist" aria-label="Show books for">
       <button type="button" role="tab" data-reader="all">All</button>
-      <button type="button" role="tab" data-reader="me">Me</button>
-      <button type="button" role="tab" data-reader="daughter">Daughter</button>
+      <button type="button" role="tab" data-reader="me">Miona</button>
+      <button type="button" role="tab" data-reader="daughter">Sena</button>
     </div>
 
     <ul id="book-list"></ul>
