@@ -24,6 +24,13 @@ Array of books:
 7. **Rating and notes**: shown for finished books. A 1-5 star rating (buttons, set with `textContent`) and a short note field saved on change.
 8. **Styling** in `style.css`: card per book, tab bar, status badge colours, mobile-friendly layout. Colour is not the only status indicator (the badge also has text).
 9. **Update `CLAUDE.md`** with the data model and the localStorage key.
+10. **Language** (new feature): a language dropdown at the top of the page with three choices: Deutsch, English, Srpski.
+    - All visible text (headings, labels, buttons, tab names, status names, messages) is looked up in a `translations` object in `app.js`, with one entry per language. English is the default.
+    - Static text in `index.html` is marked with `data-i18n` attributes and filled in with `textContent`. Text built in `render()` uses the same lookup.
+    - The chosen language is saved in localStorage under `readinglist.language` (a language code only, nothing sensitive) and restored on load. Changing the language re-renders the page straight away.
+    - Book data (titles, authors, notes) is never translated, and the stored status and reader values stay the same (`"to-read"`, `"me"`, and so on). Only their displayed labels change.
+    - Set `<html lang>` to match the chosen language.
+    - Update `CLAUDE.md` with the language key and how to add a text string.
 
 ## Files to modify
 - `index.html`: form, tab bar, list container
@@ -35,6 +42,7 @@ Array of books:
 - Open `index.html` with Go Live. Add books for both readers, switch tabs, change status, rate, add a note, remove a book; reload and confirm the data persists.
 - Type `<b>test</b>` as a title and confirm it shows as literal text.
 - Clear localStorage, and set the key to invalid JSON, to confirm the app still loads.
+- Switch between Deutsch, English and Srpski: all text changes, the choice survives a reload, and book data is unchanged.
 - Check at phone width.
 - Confirm no `innerHTML` in `app.js` (`grep innerHTML app.js`) and no external `<script src>`.
 - After pushing, check the live GitHub Pages URL.
