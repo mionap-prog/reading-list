@@ -63,12 +63,13 @@ Array of books:
 - Confirm no `innerHTML` in `app.js` (`grep innerHTML app.js`) and no external `<script src>`.
 - After pushing, check the live GitHub Pages URL.
 
-## Data model after steps 10-20 (`readinglist.books`)
+## Data model after steps 10-22 (`readinglist.books`)
 ```
 { id, title, author,
   reader: "me" | "daughter",                     // stored values do not change
   status: "to-read" | "reading" | "finished",    // stored values do not change
   ownership: "owned" | "borrowed" | "library" | "",   // new, "" for old books
+  language: "de" | "en" | "sr" | "",              // new, "" for old books
   startDate: "YYYY-MM-DD" | "",                   // new
   endDate: "YYYY-MM-DD" | "",                     // new
   rating: 0-5, note: "" }
@@ -85,7 +86,7 @@ Array of books:
 - The live site and repo are public, so the names Miona and Sena will be visible in `app.js`.
 - Past yearly goals are kept in storage, but there is no history view.
 
-## Verification for steps 10-21 (after every step, in Go Live)
+## Verification for steps 10-22 (after every step, in Go Live)
 - **Upgrade safety (steps 12-13):** in the console, save old-format books (no ownership or dates), invalid JSON, and an empty list. Reload each time. Confirm every old book still appears under the right name, the backup key holds the original text, and nothing is lost.
 - Add, edit, change status and remove books for both readers. Reload and confirm the data persists.
 - Order: Reading, then Want to read, then Read, after each status change.

@@ -64,7 +64,7 @@ Use `loadBooks()` and `saveBooks()` in `app.js` to read and write books, and `lo
 - **No new libraries** (npm packages, CDN libraries, frameworks) without asking first.
 - **Lowercase file names** only.
 - **File links have no leading slash**: use `style.css` and `app.js`, not `/style.css`. A leading slash breaks the site on GitHub Pages, which serves from a sub-path.
-- **Nothing sensitive in localStorage.** Only book data (titles, authors, status, and so on). No passwords, tokens or personal details.
+- **Nothing sensitive in localStorage.** Only book data (titles, authors, status, and so on) and reading goals (plain numbers). No passwords, tokens or personal details.
 - **No scripts from other websites.** Load only the local `app.js`.
 - **Show typed text with `textContent`, never `innerHTML`**, so user input can't inject markup or scripts.
 
