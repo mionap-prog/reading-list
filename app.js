@@ -131,6 +131,37 @@ function render() {
     });
     item.appendChild(statusSelect);
 
+    if (book.status === "finished") {
+      const rating = document.createElement("div");
+      rating.className = "rating";
+      for (let star = 1; star <= 5; star++) {
+        const starButton = document.createElement("button");
+        starButton.type = "button";
+        starButton.textContent = star <= book.rating ? "★" : "☆";
+        starButton.setAttribute("aria-label", "Rate " + star + (star === 1 ? " star" : " stars"));
+        starButton.addEventListener("click", function () {
+          // Clicking the current rating again clears it.
+          book.rating = book.rating === star ? 0 : star;
+          saveBooks(books);
+          render();
+        });
+        rating.appendChild(starButton);
+      }
+      item.appendChild(rating);
+
+      const noteInput = document.createElement("input");
+      noteInput.type = "text";
+      noteInput.maxLength = 200;
+      noteInput.placeholder = "Short note";
+      noteInput.setAttribute("aria-label", "Note for " + book.title);
+      noteInput.value = book.note;
+      noteInput.addEventListener("change", function () {
+        book.note = noteInput.value.trim();
+        saveBooks(books);
+      });
+      item.appendChild(noteInput);
+    }
+
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.textContent = "Remove";
