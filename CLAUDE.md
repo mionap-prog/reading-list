@@ -24,14 +24,18 @@ Do not add other source files or folders without asking.
 Books are saved in localStorage under the key `readinglist.books` as an array of objects:
 
 ```
-{ id, title, author, reader, status, rating, note }
+{ id, title, author, reader, status, ownership, startDate, endDate, rating, note }
 ```
 
 - `id`: number from `Date.now()`
 - `reader`: `"me"` or `"daughter"`
 - `status`: `"to-read"`, `"reading"` or `"finished"`
+- `ownership`: `"owned"`, `"borrowed"`, `"library"` or `""` (empty for old books)
+- `startDate`, `endDate`: `"YYYY-MM-DD"` text, or `""` if not set
 - `rating`: 0 to 5 (0 means not rated)
 - `note`: short text, up to 200 characters
+
+`loadBooks()` runs `migrateBooks()`, which fills in missing `ownership`, `startDate` and `endDate` on old books. Before the first upgrade it copies the raw saved text to `readinglist.books.backup`.
 
 Use `loadBooks()` and `saveBooks()` in `app.js` to read and write the data. Don't call localStorage directly elsewhere.
 
