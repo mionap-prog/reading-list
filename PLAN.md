@@ -37,8 +37,7 @@ Array of books:
     - End cannot be before start (the date picker's `min` plus a check on save).
     - The row shows the dates and, for Read books with both dates, how long it took ("Read in 11 days", counting both days).
 18. ✅ Done: **Hidden notes** (feature 7). Remove the inline note input. A book with a note shows a small note icon button (with an aria-label), and clicking it opens a small dialog that shows the note as plain text. The edit panel has an "Add note" / "Edit note" button that opens the same dialog with a textarea (max 200 characters). Notes work for books in any status, not only finished ones. Text is set with `textContent` and `.value`, never `innerHTML`.
-19. **Monthly challenge** (feature 4). Add a Challenge section above the list. For each reader: goal for the current month (number input and Save), a progress line such as "Sena: 2 of 4 books this month" and a native `<progress>` bar. With no goal, it shows "No goal set for this month". Goals are saved in `readinglist.goals` through new `loadGoals()` and `saveGoals()` helpers that copy the error handling in `loadBooks()` and `saveBooks()`. The count is the number of Read books for that reader whose `endDate` is in the current month.
-20. **Yearly challenge** (feature 5). Same as step 19 for the current year, reusing its helpers and markup: "Sena: 12 of 30 books this year".
+20. **Yearly challenge** (feature 5). Add a Challenge section above the list. For each reader: goal for the current year (number input and Save), a progress line such as "Sena: 12 of 30 books this year" and a native `<progress>` bar. With no goal, it shows "No goal set for this year". Goals are saved in `readinglist.goals` through new `loadGoals()` and `saveGoals()` helpers that copy the error handling in `loadBooks()` and `saveBooks()`. The count is the number of Read books for that reader whose `endDate` is in the current year. (There is no monthly challenge; step 19 was dropped and the numbering was left as it is.)
 21. **Update `CLAUDE.md`** with the new fields, the two new storage keys, the reader-name labels and the date rules.
 22. **Language** (new feature): a language dropdown at the top of the page with three choices: Deutsch, English, Srpski.
     - All visible text (headings, labels, buttons, tab names, status names, messages) is looked up in a `translations` object in `app.js`, with one entry per language. English is the default.
@@ -73,24 +72,24 @@ Array of books:
   endDate: "YYYY-MM-DD" | "",                     // new
   rating: 0-5, note: "" }
 ```
-- New key `readinglist.goals`: `{ "me": { "2026-11": 4, "2026": 30 }, "daughter": { ... } }`. Month keys are `YYYY-MM`, year keys are `YYYY`. Old goals stay stored, but only the current month and year are shown.
+- New key `readinglist.goals`: `{ "me": { "2026": 30 }, "daughter": { ... } }`. Keys are years (`YYYY`). Old goals stay stored, but only the current year is shown.
 - New key `readinglist.books.backup`: a copy of the raw saved text, written once before the first upgrade.
 - **Reader names:** `"me"` and `"daughter"` stay as the stored values. Miona and Sena are display labels only (`READER_NAMES`), so old books show the new names with no data rewrite and no personal names in localStorage.
-- **Dates:** stored as `YYYY-MM-DD` text, with "today" built from local time (not `toISOString()`, which uses UTC). A book counts for a month or year when its `endDate` starts with that period.
+- **Dates:** stored as `YYYY-MM-DD` text, with "today" built from local time (not `toISOString()`, which uses UTC). A book counts for a year when its `endDate` starts with that year.
 
 ## Notes for steps 10-22
 - The app never had a `source` field, so ownership is a new field and there is nothing to migrate.
 - Old finished books have no end date, so they don't count toward any challenge until an end date is added in the edit panel.
 - The Language step moved from step 10 to step 22 so that the new text from steps 10-20 is translated once. Until then, keep new labels in constant objects (like `STATUS_LABELS`). Miona and Sena are names and are not translated.
 - The live site and repo are public, so the names Miona and Sena will be visible in `app.js`.
-- Past monthly and yearly goals are kept in storage, but there is no history view.
+- Past yearly goals are kept in storage, but there is no history view.
 
 ## Verification for steps 10-21 (after every step, in Go Live)
 - **Upgrade safety (steps 12-13):** in the console, save old-format books (no ownership or dates), invalid JSON, and an empty list. Reload each time. Confirm every old book still appears under the right name, the backup key holds the original text, and nothing is lost.
 - Add, edit, change status and remove books for both readers. Reload and confirm the data persists.
 - Order: Reading, then Want to read, then Read, after each status change.
 - Dates: auto-fill on Reading and Read, an end date before the start date is rejected, moving away from Read clears the end date, and a Read book keeps its start date.
-- Challenges: set goals for both readers, finish a book and see progress and the bar change. Change a book's end date to last month and confirm it leaves the current month. Check a new month by editing the stored goal keys.
+- Challenges: set a yearly goal for both readers, finish a book and see progress and the bar change. Change a book's end date to last year and confirm it leaves the count. Check a new year by editing the stored goal key.
 - Type `<b>test</b>` as a title and as a note: both show as literal text. `grep innerHTML app.js` finds nothing.
 - Resize to 375 px wide (browser dev tools): no sideways scrolling, rows and buttons are easy to tap.
 - After pushing, open the live GitHub Pages site and repeat a quick add, edit and reload.
