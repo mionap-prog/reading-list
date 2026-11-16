@@ -31,7 +31,7 @@ Array of books:
 14. ✅ Done: **Edit panel, ownership part 2** (feature 1). Add an Edit button to each book that opens a native `<dialog>` form with title, author, reader, ownership and status, plus Save and Cancel. The inline status dropdown is removed from the book at the same time, so status is changed only here.
 15. ✅ Done: **Rating and Remove move into the edit panel.** Reuse the star loop and `removeBook(id)`. The book itself no longer shows stars or a Remove button. The rating is not shown on the book again until step 16.
 16. ✅ Done: **One-line rows** (feature 6). Restyle `.book` in `style.css` and `render()`: no cards, one row per book separated by thin lines. Line 1: title and author. Line 2: reader, status, ownership (and the rating if set, shown as stars such as "★★★★☆" in the details line, with an accessible text of "4 of 5 stars" for screen readers, for example a visually hidden or `aria-label` text, not the star characters being read out). Edit button on the right. Status stays readable as text, with a small colour marker. Tap targets at least 44 px, no horizontal scroll at 375 px.
-17. **Reading dates** (feature 2). Add Start and End date fields to the edit panel.
+17. ✅ Done: **Reading dates** (feature 2). Add Start and End date fields to the edit panel.
     - Switching to Reading fills the start date with today if empty. Switching to Read fills the end date with today if empty. You can change either date.
     - End date is shown and editable only when the status is Read. Moving away from Read clears the end date. Moving to Want to read clears both dates. A Read book keeps its start date.
     - End cannot be before start (the date picker's `min` plus a check on save).

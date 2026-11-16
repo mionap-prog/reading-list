@@ -105,6 +105,25 @@ const OWNERSHIP_LABELS = {
   "library": "Library"
 };
 
+// Today's date as "YYYY-MM-DD" in the local time zone (toISOString would use UTC).
+function todayString() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return now.getFullYear() + "-" + month + "-" + day;
+}
+
+// Number of days from start to end, counting both days ("2026-11-01" to
+// "2026-11-01" is 1 day). Returns 0 if either date is missing or end is before start.
+function daysInclusive(start, end) {
+  if (!start || !end || end < start) return 0;
+  function toUtcDay(text) {
+    const parts = text.split("-");
+    return Date.UTC(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])) / 86400000;
+  }
+  return Math.round(toUtcDay(end) - toUtcDay(start)) + 1;
+}
+
 // Removes a book by id after the user confirms. Returns true if it was removed.
 function removeBook(id) {
   const book = books.find(function (b) { return b.id === id; });
@@ -210,6 +229,24 @@ function render() {
       addDetail(ratingPart);
     }
 
+    // Dates, and for Read books with both dates, how long it took.
+    if (book.startDate) {
+      const startedPart = document.createElement("span");
+      startedPart.textContent = "Started " + book.startDate;
+      addDetail(startedPart);
+    }
+    if (book.status === "finished" && book.endDate) {
+      const finishedPart = document.createElement("span");
+      finishedPart.textContent = "Finished " + book.endDate;
+      addDetail(finishedPart);
+      const days = daysInclusive(book.startDate, book.endDate);
+      if (days > 0) {
+        const durationPart = document.createElement("span");
+        durationPart.textContent = "Read in " + days + (days === 1 ? " day" : " days");
+        addDetail(durationPart);
+      }
+    }
+
     text.appendChild(details);
     item.appendChild(text);
 
@@ -299,6 +336,10 @@ const editAuthor = document.getElementById("edit-author");
 const editReader = document.getElementById("edit-reader");
 const editOwnership = document.getElementById("edit-ownership");
 const editStatus = document.getElementById("edit-status");
+const editStartRow = document.getElementById("edit-start-row");
+const editStart = document.getElementById("edit-start");
+const editEndRow = document.getElementById("edit-end-row");
+const editEnd = document.getElementById("edit-end");
 const editRatingRow = document.getElementById("edit-rating-row");
 const editRatingStars = document.getElementById("edit-rating");
 
@@ -354,7 +395,36 @@ function updateEditRatingRow() {
   editRatingRow.hidden = editStatus.value !== "finished";
 }
 
-editStatus.addEventListener("change", updateEditRatingRow);
+// Start date is hidden for Want to read; End date is only shown for Read.
+// The End date picker cannot go before the Start date.
+function updateEditDateRows() {
+  editStartRow.hidden = editStatus.value === "to-read";
+  editEndRow.hidden = editStatus.value !== "finished";
+  editEnd.min = editStart.value;
+  editEnd.setCustomValidity("");
+}
+
+// Fills or clears the dates when the status changes in the dialog.
+// The user can still change the dates afterwards.
+editStatus.addEventListener("change", function () {
+  const status = editStatus.value;
+  if (status === "to-read") {
+    editStart.value = "";
+    editEnd.value = "";
+  } else if (status === "reading") {
+    if (editStart.value === "") editStart.value = todayString();
+    editEnd.value = "";
+  } else if (status === "finished") {
+    if (editEnd.value === "") editEnd.value = todayString();
+  }
+  updateEditRatingRow();
+  updateEditDateRows();
+});
+
+editStart.addEventListener("input", updateEditDateRows);
+editEnd.addEventListener("input", function () {
+  editEnd.setCustomValidity("");
+});
 
 function openEditDialog(book) {
   editingBook = book;
@@ -363,9 +433,12 @@ function openEditDialog(book) {
   editReader.value = book.reader;
   editOwnership.value = book.ownership;
   editStatus.value = book.status;
+  editStart.value = book.startDate || "";
+  editEnd.value = book.endDate || "";
   editRating = book.rating || 0;
   renderEditStars();
   updateEditRatingRow();
+  updateEditDateRows();
   editDialog.showModal();
   editTitle.focus();
 }
@@ -380,7 +453,20 @@ editForm.addEventListener("submit", function (event) {
     return;
   }
 
+  // Apply the date rules to the values being saved.
+  const status = editStatus.value;
+  const startDate = status === "to-read" ? "" : editStart.value;
+  const endDate = status === "finished" ? editEnd.value : "";
+
+  if (startDate && endDate && endDate < startDate) {
+    editEnd.setCustomValidity("The end date cannot be before the start date.");
+    editEnd.reportValidity();
+    return;
+  }
+
   editingBook.title = title;
+  editingBook.startDate = startDate;
+  editingBook.endDate = endDate;
   editingBook.author = editAuthor.value.trim();
   editingBook.reader = editReader.value;
   editingBook.ownership = editOwnership.value;
