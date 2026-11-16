@@ -37,6 +37,18 @@ const STATUS_LABELS = {
   "finished": "Finished"
 };
 
+// Removes a book by id after the user confirms.
+function removeBook(id) {
+  const book = books.find(function (b) { return b.id === id; });
+  if (!book) return;
+
+  if (!confirm("Remove \"" + book.title + "\" from the list?")) return;
+
+  books = books.filter(function (b) { return b.id !== id; });
+  saveBooks(books);
+  render();
+}
+
 // Draws the book list on the page. Typed text is always set with textContent.
 function render() {
   bookList.replaceChildren();
@@ -69,6 +81,14 @@ function render() {
       (READER_LABELS[book.reader] || book.reader) + " · " +
       (STATUS_LABELS[book.status] || book.status);
     item.appendChild(details);
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.textContent = "Remove";
+    removeButton.addEventListener("click", function () {
+      removeBook(book.id);
+    });
+    item.appendChild(removeButton);
 
     bookList.appendChild(item);
   });
