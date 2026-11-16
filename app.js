@@ -28,8 +28,51 @@ function saveBooks(list) {
 // The single in-memory list of books.
 let books = loadBooks();
 
-// Draws the book list on the page. Filled in by later steps.
-function render() {}
+const bookList = document.getElementById("book-list");
+
+const READER_LABELS = { me: "Me", daughter: "Daughter" };
+const STATUS_LABELS = {
+  "to-read": "To read",
+  "reading": "Reading",
+  "finished": "Finished"
+};
+
+// Draws the book list on the page. Typed text is always set with textContent.
+function render() {
+  bookList.replaceChildren();
+
+  if (books.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "empty";
+    empty.textContent = "No books yet. Add your first one above.";
+    bookList.appendChild(empty);
+    return;
+  }
+
+  books.forEach(function (book) {
+    const item = document.createElement("li");
+    item.className = "book";
+
+    const title = document.createElement("strong");
+    title.textContent = book.title;
+    item.appendChild(title);
+
+    if (book.author) {
+      const author = document.createElement("span");
+      author.textContent = " by " + book.author;
+      item.appendChild(author);
+    }
+
+    const details = document.createElement("div");
+    details.className = "details";
+    details.textContent =
+      (READER_LABELS[book.reader] || book.reader) + " · " +
+      (STATUS_LABELS[book.status] || book.status);
+    item.appendChild(details);
+
+    bookList.appendChild(item);
+  });
+}
 
 const addForm = document.getElementById("add-form");
 const titleInput = document.getElementById("title");
