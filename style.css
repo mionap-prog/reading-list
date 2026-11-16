@@ -202,6 +202,12 @@ button {
   margin-top: 0.75rem;
 }
 
+#edit-remove {
+  margin-right: auto;
+  color: #a62a2a;
+  border-color: #a62a2a;
+}
+
 #edit-save {
   background: var(--accent);
   border-color: var(--accent);
