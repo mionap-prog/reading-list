@@ -234,6 +234,15 @@ button {
   font-size: 0.9rem;
 }
 
+.date-row {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.date-row[hidden] {
+  display: none;
+}
+
 .dialog-buttons {
   display: flex;
   justify-content: flex-end;
