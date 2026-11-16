@@ -77,6 +77,56 @@ button {
   outline-offset: 2px;
 }
 
+/* Yearly challenge */
+#challenge {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+#challenge h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.challenge-row {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.5rem 0;
+}
+
+.challenge-row + .challenge-row {
+  border-top: 1px solid var(--border);
+}
+
+.challenge-row progress {
+  width: 100%;
+  accent-color: var(--finished);
+}
+
+.goal-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.goal-form label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.goal-form input {
+  width: 5rem;
+  min-height: 44px;
+}
+
+.goal-form button {
+  min-height: 44px;
+}
+
 /* Reader tabs */
 #tabs {
   display: flex;

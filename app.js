@@ -56,8 +56,37 @@ function saveBooks(list) {
   }
 }
 
-// The single in-memory list of books.
+// Yearly reading goals, saved under their own key: { me: { "2026": 30 }, daughter: { ... } }.
+// Keys are years. Old years stay stored, but only the current year is shown.
+const GOALS_KEY = "readinglist.goals";
+
+// Read the saved goals. Falls back to no goals if nothing is saved, the saved
+// data is not valid JSON, or localStorage is unavailable.
+function loadGoals() {
+  try {
+    const saved = localStorage.getItem(GOALS_KEY);
+    if (saved === null) return {};
+    const parsed = JSON.parse(saved);
+    const isObject = parsed !== null && typeof parsed === "object" && !Array.isArray(parsed);
+    return isObject ? parsed : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+// Save the goals. Returns false if saving failed.
+function saveGoals(goalData) {
+  try {
+    localStorage.setItem(GOALS_KEY, JSON.stringify(goalData));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+// The single in-memory list of books, and the goals.
 let books = loadBooks();
+let goals = loadGoals();
 
 const bookList = document.getElementById("book-list");
 const tabButtons = document.querySelectorAll("#tabs button");
@@ -137,9 +166,97 @@ function removeBook(id) {
   return true;
 }
 
+// Draws the yearly challenge: one block per reader (always both readers).
+function renderChallenge() {
+  const year = String(new Date().getFullYear());
+  const container = document.getElementById("challenge-rows");
+  container.replaceChildren();
+
+  Object.keys(READER_NAMES).forEach(function (reader) {
+    const name = READER_NAMES[reader];
+    const goal = goals[reader] && goals[reader][year];
+    const hasGoal = Number.isInteger(goal) && goal > 0;
+
+    // Read books for this reader that ended in the current year.
+    const count = books.filter(function (book) {
+      return book.reader === reader && book.status === "finished" &&
+        typeof book.endDate === "string" && book.endDate.startsWith(year);
+    }).length;
+
+    const block = document.createElement("div");
+    block.className = "challenge-row";
+
+    const line = document.createElement("div");
+    line.textContent = hasGoal
+      ? name + ": " + count + " of " + goal + (goal === 1 ? " book" : " books") + " this year"
+      : name + ": No goal set for this year";
+    block.appendChild(line);
+
+    if (hasGoal) {
+      const bar = document.createElement("progress");
+      bar.max = goal;
+      bar.value = Math.min(count, goal);
+      bar.setAttribute("aria-label", name + " yearly progress");
+      block.appendChild(bar);
+    }
+
+    const form = document.createElement("form");
+    form.className = "goal-form";
+
+    const label = document.createElement("label");
+    label.htmlFor = "goal-" + reader;
+    label.textContent = "Goal for " + name;
+    form.appendChild(label);
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.id = "goal-" + reader;
+    input.min = "1";
+    input.max = "999";
+    input.step = "1";
+    input.value = hasGoal ? String(goal) : "";
+    form.appendChild(input);
+
+    const save = document.createElement("button");
+    save.type = "submit";
+    save.textContent = "Save";
+    save.setAttribute("aria-label", "Save goal for " + name);
+    form.appendChild(save);
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (text === "") {
+        // An empty box removes the goal for this year.
+        if (goals[reader]) delete goals[reader][year];
+      } else {
+        const number = Number(text);
+        if (!Number.isInteger(number) || number < 1 || number > 999) {
+          input.setCustomValidity("Enter a whole number from 1 to 999.");
+          input.reportValidity();
+          input.addEventListener("input", function () {
+            input.setCustomValidity("");
+          }, { once: true });
+          return;
+        }
+        if (!goals[reader] || typeof goals[reader] !== "object") goals[reader] = {};
+        goals[reader][year] = number;
+      }
+      saveGoals(goals);
+      renderChallenge();
+      // The challenge was redrawn, so put focus back on this reader's goal box.
+      document.getElementById("goal-" + reader).focus();
+    });
+
+    block.appendChild(form);
+    container.appendChild(block);
+  });
+}
+
 // Draws the book list on the page. Typed text is always set with textContent.
 function render() {
   updateTabs();
+  renderChallenge();
   bookList.replaceChildren();
 
   const visibleBooks = books.filter(function (book) {
