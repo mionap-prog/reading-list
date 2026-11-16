@@ -31,4 +31,35 @@ let books = loadBooks();
 // Draws the book list on the page. Filled in by later steps.
 function render() {}
 
+const addForm = document.getElementById("add-form");
+const titleInput = document.getElementById("title");
+const authorInput = document.getElementById("author");
+const readerSelect = document.getElementById("reader");
+
+addForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  const title = titleInput.value.trim();
+  if (title === "") {
+    titleInput.focus();
+    return;
+  }
+
+  books.push({
+    id: Date.now(),
+    title: title,
+    author: authorInput.value.trim(),
+    reader: readerSelect.value,
+    status: "to-read",
+    rating: 0,
+    note: ""
+  });
+
+  saveBooks(books);
+  render();
+
+  addForm.reset();
+  titleInput.focus();
+});
+
 render();
