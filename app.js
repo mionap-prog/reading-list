@@ -2,6 +2,9 @@
 
 const STORAGE_KEY = "readinglist.books";
 
+// Display names only. The stored values stay "me" and "daughter".
+const READER_NAMES = { me: "Miona", daughter: "Sena" };
+
 // Read the saved books. Falls back to an empty list if nothing is saved,
 // the saved data is not valid JSON, or localStorage is unavailable.
 function loadBooks() {
@@ -58,7 +61,6 @@ tabButtons.forEach(function (button) {
   });
 });
 
-const READER_LABELS = { me: "Me", daughter: "Daughter" };
 const STATUS_LABELS = {
   "to-read": "To read",
   "reading": "Reading",
@@ -113,7 +115,7 @@ function render() {
 
     const details = document.createElement("div");
     details.className = "details";
-    details.textContent = READER_LABELS[book.reader] || book.reader;
+    details.textContent = READER_NAMES[book.reader] || book.reader;
     item.appendChild(details);
 
     const statusSelect = document.createElement("select");
@@ -179,6 +181,19 @@ const addForm = document.getElementById("add-form");
 const titleInput = document.getElementById("title");
 const authorInput = document.getElementById("author");
 const readerSelect = document.getElementById("reader");
+
+// Fill in the reader names on the tabs, the form dropdown and the intro line.
+// Falls back to the stored value if a name is missing.
+tabButtons.forEach(function (button) {
+  if (READER_NAMES[button.dataset.reader]) {
+    button.textContent = READER_NAMES[button.dataset.reader];
+  }
+});
+Array.from(readerSelect.options).forEach(function (option) {
+  option.textContent = READER_NAMES[option.value] || option.value;
+});
+document.getElementById("intro").textContent =
+  "Books for " + READER_NAMES.me + " and " + READER_NAMES.daughter;
 
 addForm.addEventListener("submit", function (event) {
   event.preventDefault();
