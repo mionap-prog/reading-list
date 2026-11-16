@@ -53,15 +53,6 @@ function syncReaderSelect() {
   }
 }
 
-// Fill in the reader names on the tabs, the intro line and (later) the form dropdown.
-tabButtons.forEach(function (button) {
-  if (READER_NAMES[button.dataset.reader]) {
-    button.textContent = READER_NAMES[button.dataset.reader];
-  }
-});
-document.getElementById("intro").textContent =
-  "Books for " + READER_NAMES.me + " and " + READER_NAMES.daughter;
-
 tabButtons.forEach(function (button) {
   button.addEventListener("click", function () {
     currentTab = button.dataset.reader;
@@ -190,9 +181,19 @@ const addForm = document.getElementById("add-form");
 const titleInput = document.getElementById("title");
 const authorInput = document.getElementById("author");
 const readerSelect = document.getElementById("reader");
-Array.from(readerSelect.options).forEach(function (option) {
-  option.textContent = READER_NAMES[option.value];
+
+// Fill in the reader names on the tabs, the form dropdown and the intro line.
+// Falls back to the stored value if a name is missing.
+tabButtons.forEach(function (button) {
+  if (READER_NAMES[button.dataset.reader]) {
+    button.textContent = READER_NAMES[button.dataset.reader];
+  }
 });
+Array.from(readerSelect.options).forEach(function (option) {
+  option.textContent = READER_NAMES[option.value] || option.value;
+});
+document.getElementById("intro").textContent =
+  "Books for " + READER_NAMES.me + " and " + READER_NAMES.daughter;
 
 addForm.addEventListener("submit", function (event) {
   event.preventDefault();
