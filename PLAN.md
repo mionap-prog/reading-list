@@ -39,13 +39,14 @@ Array of books:
 18. ✅ Done: **Hidden notes** (feature 7). Remove the inline note input. A book with a note shows a small note icon button (with an aria-label), and clicking it opens a small dialog that shows the note as plain text. The edit panel has an "Add note" / "Edit note" button that opens the same dialog with a textarea (max 200 characters). Notes work for books in any status, not only finished ones. Text is set with `textContent` and `.value`, never `innerHTML`.
 20. ✅ Done: **Yearly challenge** (feature 5). Add a Challenge section above the list. For each reader: goal for the current year (number input and Save), a progress line such as "Sena: 12 of 30 books this year" and a native `<progress>` bar. With no goal, it shows "No goal set for this year". Goals are saved in `readinglist.goals` through new `loadGoals()` and `saveGoals()` helpers that copy the error handling in `loadBooks()` and `saveBooks()`. The count is the number of Read books for that reader whose `endDate` is in the current year. (There is no monthly challenge; step 19 was dropped and the numbering was left as it is.)
 21. ✅ Done: **Update `CLAUDE.md`** with the new fields, the two new storage keys, the reader-name labels and the date rules.
-22. **Language** (new feature): a language dropdown at the top of the page with three choices: Deutsch, English, Srpski.
-    - All visible text (headings, labels, buttons, tab names, status names, messages) is looked up in a `translations` object in `app.js`, with one entry per language. English is the default.
-    - Static text in `index.html` is marked with `data-i18n` attributes and filled in with `textContent`. Text built in `render()` uses the same lookup.
-    - The chosen language is saved in localStorage under `readinglist.language` (a language code only, nothing sensitive) and restored on load. Changing the language re-renders the page straight away.
-    - Book data (titles, authors, notes) is never translated, and the stored status and reader values stay the same (`"to-read"`, `"me"`, and so on). Only their displayed labels change.
-    - Set `<html lang>` to match the chosen language.
-    - Update `CLAUDE.md` with the language key and how to add a text string.
+22. **Language** (new field). Each book gets a language: Deutsch, English or Srpski.
+    - New field `language` on every book. Stored values are `"de"`, `"en"`, `"sr"` or `""` (empty means not set, and is what old books get). The labels Deutsch, English and Srpski live in a `LANGUAGE_LABELS` object, like `OWNERSHIP_LABELS`.
+    - Add `language: ""` to `NEW_BOOK_FIELDS` so `migrateBooks()` fills it in on old books. Old books without a language must still load and show no language, and the backup behaviour does not change.
+    - The add form has a Language dropdown with a "Not set" option first, then Deutsch, English and Srpski. New books save the chosen value.
+    - The edit dialog has the same dropdown (filled with `fillOptions()`), shows the book's current language, and saves the change on Save.
+    - The book's details line shows the language label after the ownership, only when a language is set.
+    - Text is set with `textContent`, never `innerHTML`.
+    - Update the data model in `CLAUDE.md` with the `language` field, its stored values and the migration.
 
 ## Files to modify
 - `index.html`: form, tab bar, list container
@@ -57,7 +58,7 @@ Array of books:
 - Open `index.html` with Go Live. Add books for both readers, switch tabs, change status, rate, add a note, remove a book; reload and confirm the data persists.
 - Type `<b>test</b>` as a title and confirm it shows as literal text.
 - Clear localStorage, and set the key to invalid JSON, to confirm the app still loads.
-- Switch between Deutsch, English and Srpski: all text changes, the choice survives a reload, and book data is unchanged.
+- Language: pick a language when adding a book and change it in the edit dialog. It shows in the details line and survives a reload. Old books without a language still load and show none.
 - Check at phone width.
 - Confirm no `innerHTML` in `app.js` (`grep innerHTML app.js`) and no external `<script src>`.
 - After pushing, check the live GitHub Pages URL.
@@ -80,7 +81,7 @@ Array of books:
 ## Notes for steps 10-22
 - The app never had a `source` field, so ownership is a new field and there is nothing to migrate.
 - Old finished books have no end date, so they don't count toward any challenge until an end date is added in the edit panel.
-- The Language step moved from step 10 to step 22 so that the new text from steps 10-20 is translated once. Until then, keep new labels in constant objects (like `STATUS_LABELS`). Miona and Sena are names and are not translated.
+- Step 22 (Language) is a per-book field, not a translation of the app. Keep labels in constant objects (like `STATUS_LABELS`, `OWNERSHIP_LABELS` and `LANGUAGE_LABELS`). Miona and Sena are names, shown through `READER_NAMES`.
 - The live site and repo are public, so the names Miona and Sena will be visible in `app.js`.
 - Past yearly goals are kept in storage, but there is no history view.
 
