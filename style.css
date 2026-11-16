@@ -50,6 +50,7 @@ h1 {
 
 input,
 select,
+textarea,
 button {
   font: inherit;
   padding: 0.5rem 0.6rem;
@@ -131,15 +132,14 @@ button {
   font-size: 0.9rem;
 }
 
-.book > button {
-  min-width: 44px;
-  min-height: 44px;
+.book-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
-.book > input {
-  grid-column: 1 / -1;
+.book-actions button {
+  min-width: 44px;
   min-height: 44px;
-  min-width: 0;
 }
 
 /* Small colour marker before the status text. */
@@ -205,8 +205,9 @@ button {
   }
 }
 
-/* Edit dialog */
-#edit-dialog {
+/* Edit and note dialogs */
+#edit-dialog,
+#note-dialog {
   width: min(28rem, calc(100% - 2rem));
   padding: 1rem;
   background: var(--card);
@@ -215,21 +216,25 @@ button {
   border-radius: 8px;
 }
 
-#edit-dialog::backdrop {
+#edit-dialog::backdrop,
+#note-dialog::backdrop {
   background: rgba(0, 0, 0, 0.4);
 }
 
-#edit-form {
+#edit-form,
+#note-form {
   display: grid;
   gap: 0.35rem;
 }
 
-#edit-form h2 {
+#edit-form h2,
+#note-form h2 {
   margin: 0 0 0.5rem;
 }
 
 #edit-form label,
-#edit-form .field-label {
+#edit-form .field-label,
+#note-form label {
   font-weight: 600;
   font-size: 0.9rem;
 }
@@ -256,9 +261,21 @@ button {
   border-color: #a62a2a;
 }
 
-#edit-save {
+#edit-save,
+#note-save {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
   font-weight: 600;
+}
+
+#note-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#note-input {
+  width: 100%;
+  resize: vertical;
 }

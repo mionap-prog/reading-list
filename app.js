@@ -250,7 +250,22 @@ function render() {
     text.appendChild(details);
     item.appendChild(text);
 
-    // Edit button on the right.
+    // Buttons on the right: a note icon (only if the book has a note), then Edit.
+    const actions = document.createElement("div");
+    actions.className = "book-actions";
+
+    if (book.note) {
+      const noteButton = document.createElement("button");
+      noteButton.type = "button";
+      noteButton.className = "note-button";
+      noteButton.textContent = "\u{1F4DD}";
+      noteButton.setAttribute("aria-label", "Show note for " + book.title);
+      noteButton.addEventListener("click", function () {
+        openNoteDialog(book.note, false, null);
+      });
+      actions.appendChild(noteButton);
+    }
+
     const editButton = document.createElement("button");
     editButton.type = "button";
     editButton.textContent = "Edit";
@@ -258,22 +273,8 @@ function render() {
     editButton.addEventListener("click", function () {
       openEditDialog(book);
     });
-    item.appendChild(editButton);
-
-    // Inline note stays until step 18 replaces it; it sits on its own line.
-    if (book.status === "finished") {
-      const noteInput = document.createElement("input");
-      noteInput.type = "text";
-      noteInput.maxLength = 200;
-      noteInput.placeholder = "Short note";
-      noteInput.setAttribute("aria-label", "Note for " + book.title);
-      noteInput.value = book.note;
-      noteInput.addEventListener("change", function () {
-        book.note = noteInput.value.trim();
-        saveBooks(books);
-      });
-      item.appendChild(noteInput);
-    }
+    actions.appendChild(editButton);
+    item.appendChild(actions);
 
     bookList.appendChild(item);
   });
@@ -328,6 +329,44 @@ addForm.addEventListener("submit", function (event) {
   titleInput.focus();
 });
 
+// Note dialog. It shows a note as plain text, or (when editable) a textarea.
+const noteDialog = document.getElementById("note-dialog");
+const noteForm = document.getElementById("note-form");
+const noteText = document.getElementById("note-text");
+const noteInputRow = document.getElementById("note-input-row");
+const noteInput = document.getElementById("note-input");
+const noteCancel = document.getElementById("note-cancel");
+const noteSave = document.getElementById("note-save");
+
+// Called with the trimmed text when Save is pressed (null when just viewing).
+let noteSaveHandler = null;
+
+function openNoteDialog(text, editable, onSave) {
+  noteText.hidden = editable;
+  noteText.textContent = editable ? "" : text;
+  noteInputRow.hidden = !editable;
+  noteInput.value = editable ? text : "";
+  noteSave.hidden = !editable;
+  noteCancel.textContent = editable ? "Cancel" : "Close";
+  noteSaveHandler = editable ? onSave : null;
+  noteDialog.showModal();
+  (editable ? noteInput : noteCancel).focus();
+}
+
+noteForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+  if (noteSaveHandler) noteSaveHandler(noteInput.value.trim());
+  noteDialog.close();
+});
+
+noteCancel.addEventListener("click", function () {
+  noteDialog.close();
+});
+
+noteDialog.addEventListener("close", function () {
+  noteSaveHandler = null;
+});
+
 // Edit dialog. The dropdown options come from the same label objects as the list.
 const editDialog = document.getElementById("edit-dialog");
 const editForm = document.getElementById("edit-form");
@@ -340,6 +379,7 @@ const editStartRow = document.getElementById("edit-start-row");
 const editStart = document.getElementById("edit-start");
 const editEndRow = document.getElementById("edit-end-row");
 const editEnd = document.getElementById("edit-end");
+const editNoteButton = document.getElementById("edit-note");
 const editRatingRow = document.getElementById("edit-rating-row");
 const editRatingStars = document.getElementById("edit-rating");
 
@@ -395,6 +435,20 @@ function updateEditRatingRow() {
   editRatingRow.hidden = editStatus.value !== "finished";
 }
 
+// The note being edited in the dialog. It is only copied to the book on Save.
+let editNote = "";
+
+function updateEditNoteButton() {
+  editNoteButton.textContent = editNote ? "Edit note" : "Add note";
+}
+
+editNoteButton.addEventListener("click", function () {
+  openNoteDialog(editNote, true, function (text) {
+    editNote = text;
+    updateEditNoteButton();
+  });
+});
+
 // Start date is hidden for Want to read; End date is only shown for Read.
 // The End date picker cannot go before the Start date.
 function updateEditDateRows() {
@@ -435,6 +489,8 @@ function openEditDialog(book) {
   editStatus.value = book.status;
   editStart.value = book.startDate || "";
   editEnd.value = book.endDate || "";
+  editNote = book.note || "";
+  updateEditNoteButton();
   editRating = book.rating || 0;
   renderEditStars();
   updateEditRatingRow();
@@ -467,6 +523,7 @@ editForm.addEventListener("submit", function (event) {
   editingBook.title = title;
   editingBook.startDate = startDate;
   editingBook.endDate = endDate;
+  editingBook.note = editNote;
   editingBook.author = editAuthor.value.trim();
   editingBook.reader = editReader.value;
   editingBook.ownership = editOwnership.value;
