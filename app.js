@@ -148,26 +148,82 @@ function render() {
     item.className = "book";
     item.dataset.status = book.status;
 
+    // Left side: line 1 (title and author) and line 2 (details).
+    const text = document.createElement("div");
+    text.className = "book-text";
+
+    const heading = document.createElement("div");
+    heading.className = "book-title";
     const title = document.createElement("strong");
     title.textContent = book.title;
-    item.appendChild(title);
-
+    heading.appendChild(title);
     if (book.author) {
       const author = document.createElement("span");
       author.textContent = " by " + book.author;
-      item.appendChild(author);
+      heading.appendChild(author);
     }
+    text.appendChild(heading);
 
     const details = document.createElement("div");
     details.className = "details";
-    const detailParts = [READER_NAMES[book.reader] || book.reader];
-    detailParts.push(STATUS_LABELS[book.status] || book.status);
-    if (OWNERSHIP_LABELS[book.ownership]) {
-      detailParts.push(OWNERSHIP_LABELS[book.ownership]);
-    }
-    details.textContent = detailParts.join(" · ");
-    item.appendChild(details);
 
+    // Adds a " · " separator before every part except the first.
+    function addDetail(node) {
+      if (details.childNodes.length > 0) {
+        details.appendChild(document.createTextNode(" · "));
+      }
+      details.appendChild(node);
+    }
+
+    const readerPart = document.createElement("span");
+    readerPart.textContent = READER_NAMES[book.reader] || book.reader;
+    addDetail(readerPart);
+
+    // Status is text with a small colour marker (the colour is only a hint).
+    const statusPart = document.createElement("span");
+    const marker = document.createElement("span");
+    marker.className = "status-marker";
+    marker.setAttribute("aria-hidden", "true");
+    statusPart.appendChild(marker);
+    statusPart.appendChild(document.createTextNode(STATUS_LABELS[book.status] || book.status));
+    addDetail(statusPart);
+
+    if (OWNERSHIP_LABELS[book.ownership]) {
+      const ownershipPart = document.createElement("span");
+      ownershipPart.textContent = OWNERSHIP_LABELS[book.ownership];
+      addDetail(ownershipPart);
+    }
+
+    // Stars are shown for Read books that have a rating. Screen readers get
+    // "4 of 5 stars" instead of the star characters.
+    if (book.status === "finished" && book.rating > 0) {
+      const ratingPart = document.createElement("span");
+      const stars = document.createElement("span");
+      stars.className = "stars";
+      stars.setAttribute("aria-hidden", "true");
+      stars.textContent = "★".repeat(book.rating) + "☆".repeat(5 - book.rating);
+      const starsText = document.createElement("span");
+      starsText.className = "visually-hidden";
+      starsText.textContent = book.rating + " of 5 stars";
+      ratingPart.appendChild(stars);
+      ratingPart.appendChild(starsText);
+      addDetail(ratingPart);
+    }
+
+    text.appendChild(details);
+    item.appendChild(text);
+
+    // Edit button on the right.
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.textContent = "Edit";
+    editButton.setAttribute("aria-label", "Edit " + book.title);
+    editButton.addEventListener("click", function () {
+      openEditDialog(book);
+    });
+    item.appendChild(editButton);
+
+    // Inline note stays until step 18 replaces it; it sits on its own line.
     if (book.status === "finished") {
       const noteInput = document.createElement("input");
       noteInput.type = "text";
@@ -181,15 +237,6 @@ function render() {
       });
       item.appendChild(noteInput);
     }
-
-    const editButton = document.createElement("button");
-    editButton.type = "button";
-    editButton.textContent = "Edit";
-    editButton.setAttribute("aria-label", "Edit " + book.title);
-    editButton.addEventListener("click", function () {
-      openEditDialog(book);
-    });
-    item.appendChild(editButton);
 
     bookList.appendChild(item);
   });
