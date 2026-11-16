@@ -77,10 +77,32 @@
         <div id="edit-rating" class="rating" role="group" aria-labelledby="edit-rating-label"></div>
       </div>
 
+      <div>
+        <button type="button" id="edit-note">Add note</button>
+      </div>
+
       <div class="dialog-buttons">
         <button type="button" id="edit-remove">Remove</button>
         <button type="button" id="edit-cancel">Cancel</button>
         <button type="submit" id="edit-save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="note-dialog" aria-labelledby="note-heading">
+    <form id="note-form">
+      <h2 id="note-heading">Note</h2>
+
+      <p id="note-text"></p>
+
+      <div id="note-input-row" class="date-row" hidden>
+        <label for="note-input">Note (up to 200 characters)</label>
+        <textarea id="note-input" maxlength="200" rows="4"></textarea>
+      </div>
+
+      <div class="dialog-buttons">
+        <button type="button" id="note-cancel">Close</button>
+        <button type="submit" id="note-save" hidden>Save</button>
       </div>
     </form>
   </dialog>
