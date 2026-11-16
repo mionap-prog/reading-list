@@ -105,16 +105,17 @@ const OWNERSHIP_LABELS = {
   "library": "Library"
 };
 
-// Removes a book by id after the user confirms.
+// Removes a book by id after the user confirms. Returns true if it was removed.
 function removeBook(id) {
   const book = books.find(function (b) { return b.id === id; });
-  if (!book) return;
+  if (!book) return false;
 
-  if (!confirm("Remove \"" + book.title + "\" from the list?")) return;
+  if (!confirm("Remove \"" + book.title + "\" from the list?")) return false;
 
   books = books.filter(function (b) { return b.id !== id; });
   saveBooks(books);
   render();
+  return true;
 }
 
 // Draws the book list on the page. Typed text is always set with textContent.
@@ -168,27 +169,6 @@ function render() {
     item.appendChild(details);
 
     if (book.status === "finished") {
-      const rating = document.createElement("div");
-      rating.className = "rating";
-      rating.setAttribute("role", "group");
-      rating.setAttribute("aria-label", "Rating of " + book.title);
-      for (let star = 1; star <= 5; star++) {
-        const starButton = document.createElement("button");
-        starButton.type = "button";
-        starButton.textContent = star <= book.rating ? "★" : "☆";
-        starButton.setAttribute("aria-label", "Rate " + star + (star === 1 ? " star" : " stars"));
-        // Pressed means this star is the current rating.
-        starButton.setAttribute("aria-pressed", book.rating === star ? "true" : "false");
-        starButton.addEventListener("click", function () {
-          // Clicking the current rating again clears it.
-          book.rating = book.rating === star ? 0 : star;
-          saveBooks(books);
-          render();
-        });
-        rating.appendChild(starButton);
-      }
-      item.appendChild(rating);
-
       const noteInput = document.createElement("input");
       noteInput.type = "text";
       noteInput.maxLength = 200;
@@ -210,14 +190,6 @@ function render() {
       openEditDialog(book);
     });
     item.appendChild(editButton);
-
-    const removeButton = document.createElement("button");
-    removeButton.type = "button";
-    removeButton.textContent = "Remove";
-    removeButton.addEventListener("click", function () {
-      removeBook(book.id);
-    });
-    item.appendChild(removeButton);
 
     bookList.appendChild(item);
   });
@@ -372,6 +344,12 @@ editForm.addEventListener("submit", function (event) {
   saveBooks(books);
   editDialog.close();
   render();
+});
+
+// Remove asks for confirmation first. The dialog closes only if the book was removed.
+document.getElementById("edit-remove").addEventListener("click", function () {
+  if (!editingBook) return;
+  if (removeBook(editingBook.id)) editDialog.close();
 });
 
 document.getElementById("edit-cancel").addEventListener("click", function () {
