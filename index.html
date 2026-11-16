@@ -11,7 +11,7 @@
     <h1>Reading List</h1>
     <p id="intro">Books for Miona and Sena</p>
 
-    <form id="add-form">
+    <form id="add-form" aria-label="Add a book">
       <label for="title">Title</label>
       <input type="text" id="title" required>
 
@@ -34,10 +34,10 @@
       <button type="submit">Add book</button>
     </form>
 
-    <div id="tabs" role="tablist" aria-label="Show books for">
-      <button type="button" role="tab" data-reader="all">All</button>
-      <button type="button" role="tab" data-reader="me">Miona</button>
-      <button type="button" role="tab" data-reader="daughter">Sena</button>
+    <div id="tabs" role="group" aria-label="Show books for">
+      <button type="button" data-reader="all">All</button>
+      <button type="button" data-reader="me">Miona</button>
+      <button type="button" data-reader="daughter">Sena</button>
     </div>
 
     <ul id="book-list"></ul>

@@ -65,12 +65,12 @@ const tabButtons = document.querySelectorAll("#tabs button");
 // Which tab is selected: "all", "me" or "daughter".
 let currentTab = "all";
 
-// Marks the selected tab for styling and screen readers.
+// Marks the selected filter button for styling and screen readers.
 function updateTabs() {
   tabButtons.forEach(function (button) {
     const isActive = button.dataset.reader === currentTab;
     button.classList.toggle("active", isActive);
-    button.setAttribute("aria-selected", isActive ? "true" : "false");
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
 }
 
@@ -185,11 +185,15 @@ function render() {
     if (book.status === "finished") {
       const rating = document.createElement("div");
       rating.className = "rating";
+      rating.setAttribute("role", "group");
+      rating.setAttribute("aria-label", "Rating of " + book.title);
       for (let star = 1; star <= 5; star++) {
         const starButton = document.createElement("button");
         starButton.type = "button";
         starButton.textContent = star <= book.rating ? "★" : "☆";
         starButton.setAttribute("aria-label", "Rate " + star + (star === 1 ? " star" : " stars"));
+        // Pressed means this star is the current rating.
+        starButton.setAttribute("aria-pressed", book.rating === star ? "true" : "false");
         starButton.addEventListener("click", function () {
           // Clicking the current rating again clears it.
           book.rating = book.rating === star ? 0 : star;
