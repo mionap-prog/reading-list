@@ -99,6 +99,7 @@ function render() {
   visibleBooks.forEach(function (book) {
     const item = document.createElement("li");
     item.className = "book";
+    item.dataset.status = book.status;
 
     const title = document.createElement("strong");
     title.textContent = book.title;
