@@ -8,7 +8,7 @@ const READER_NAMES = { me: "Miona", daughter: "Sena" };
 const BACKUP_KEY = "readinglist.books.backup";
 
 // Fields added after the first version, with the value old books get.
-const NEW_BOOK_FIELDS = { ownership: "", startDate: "", endDate: "" };
+const NEW_BOOK_FIELDS = { ownership: "", startDate: "", endDate: "", language: "" };
 
 // Fills in any missing new fields on old books. Safe to run on every load:
 // it only adds fields that are missing and never changes other fields.
@@ -152,6 +152,13 @@ function daysInclusive(start, end) {
   }
   return Math.round(toUtcDay(end) - toUtcDay(start)) + 1;
 }
+
+// Display labels for the language values. Old books have "" and show nothing.
+const LANGUAGE_LABELS = {
+  "de": "Deutsch",
+  "en": "English",
+  "sr": "Srpski"
+};
 
 // Removes a book by id after the user confirms. Returns true if it was removed.
 function removeBook(id) {
@@ -330,6 +337,12 @@ function render() {
       addDetail(ownershipPart);
     }
 
+    if (LANGUAGE_LABELS[book.language]) {
+      const languagePart = document.createElement("span");
+      languagePart.textContent = LANGUAGE_LABELS[book.language];
+      addDetail(languagePart);
+    }
+
     // Stars are shown for Read books that have a rating. Screen readers get
     // "4 of 5 stars" instead of the star characters.
     if (book.status === "finished" && book.rating > 0) {
@@ -402,6 +415,7 @@ const titleInput = document.getElementById("title");
 const authorInput = document.getElementById("author");
 const readerSelect = document.getElementById("reader");
 const ownershipSelect = document.getElementById("ownership");
+const languageSelect = document.getElementById("language");
 
 // Fill in the reader names on the tabs, the form dropdown and the intro line.
 // Falls back to the stored value if a name is missing.
@@ -432,6 +446,7 @@ addForm.addEventListener("submit", function (event) {
     reader: readerSelect.value,
     status: "to-read",
     ownership: ownershipSelect.value,
+    language: languageSelect.value,
     startDate: "",
     endDate: "",
     rating: 0,
@@ -491,6 +506,7 @@ const editTitle = document.getElementById("edit-title");
 const editAuthor = document.getElementById("edit-author");
 const editReader = document.getElementById("edit-reader");
 const editOwnership = document.getElementById("edit-ownership");
+const editLanguage = document.getElementById("edit-language");
 const editStatus = document.getElementById("edit-status");
 const editStartRow = document.getElementById("edit-start-row");
 const editStart = document.getElementById("edit-start");
@@ -519,6 +535,7 @@ function fillOptions(select, labels, emptyLabel) {
 
 fillOptions(editReader, READER_NAMES);
 fillOptions(editOwnership, OWNERSHIP_LABELS, "Not set");
+fillOptions(editLanguage, LANGUAGE_LABELS, "Not set");
 fillOptions(editStatus, STATUS_LABELS);
 
 // The book currently being edited (null when the dialog is closed).
@@ -603,6 +620,7 @@ function openEditDialog(book) {
   editAuthor.value = book.author;
   editReader.value = book.reader;
   editOwnership.value = book.ownership;
+  editLanguage.value = book.language || "";
   editStatus.value = book.status;
   editStart.value = book.startDate || "";
   editEnd.value = book.endDate || "";
@@ -644,6 +662,7 @@ editForm.addEventListener("submit", function (event) {
   editingBook.author = editAuthor.value.trim();
   editingBook.reader = editReader.value;
   editingBook.ownership = editOwnership.value;
+  editingBook.language = editLanguage.value;
   editingBook.status = editStatus.value;
   // Stars are only editable for Read books; other books keep their old rating.
   if (editStatus.value === "finished") editingBook.rating = editRating;
