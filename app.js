@@ -160,27 +160,12 @@ function render() {
     const details = document.createElement("div");
     details.className = "details";
     const detailParts = [READER_NAMES[book.reader] || book.reader];
+    detailParts.push(STATUS_LABELS[book.status] || book.status);
     if (OWNERSHIP_LABELS[book.ownership]) {
       detailParts.push(OWNERSHIP_LABELS[book.ownership]);
     }
     details.textContent = detailParts.join(" · ");
     item.appendChild(details);
-
-    const statusSelect = document.createElement("select");
-    statusSelect.setAttribute("aria-label", "Status of " + book.title);
-    Object.keys(STATUS_LABELS).forEach(function (value) {
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = STATUS_LABELS[value];
-      statusSelect.appendChild(option);
-    });
-    statusSelect.value = book.status;
-    statusSelect.addEventListener("change", function () {
-      book.status = statusSelect.value;
-      saveBooks(books);
-      render();
-    });
-    item.appendChild(statusSelect);
 
     if (book.status === "finished") {
       const rating = document.createElement("div");
@@ -216,6 +201,15 @@ function render() {
       });
       item.appendChild(noteInput);
     }
+
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.textContent = "Edit";
+    editButton.setAttribute("aria-label", "Edit " + book.title);
+    editButton.addEventListener("click", function () {
+      openEditDialog(book);
+    });
+    item.appendChild(editButton);
 
     const removeButton = document.createElement("button");
     removeButton.type = "button";
@@ -276,6 +270,117 @@ addForm.addEventListener("submit", function (event) {
   addForm.reset();
   syncReaderSelect();
   titleInput.focus();
+});
+
+// Edit dialog. The dropdown options come from the same label objects as the list.
+const editDialog = document.getElementById("edit-dialog");
+const editForm = document.getElementById("edit-form");
+const editTitle = document.getElementById("edit-title");
+const editAuthor = document.getElementById("edit-author");
+const editReader = document.getElementById("edit-reader");
+const editOwnership = document.getElementById("edit-ownership");
+const editStatus = document.getElementById("edit-status");
+const editRatingRow = document.getElementById("edit-rating-row");
+const editRatingStars = document.getElementById("edit-rating");
+
+// Adds one <option> per entry in a labels object (text set with textContent).
+// If emptyLabel is given, a first option with an empty value is added too.
+function fillOptions(select, labels, emptyLabel) {
+  if (emptyLabel !== undefined) {
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = emptyLabel;
+    select.appendChild(empty);
+  }
+  Object.keys(labels).forEach(function (value) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = labels[value];
+    select.appendChild(option);
+  });
+}
+
+fillOptions(editReader, READER_NAMES);
+fillOptions(editOwnership, OWNERSHIP_LABELS, "Not set");
+fillOptions(editStatus, STATUS_LABELS);
+
+// The book currently being edited (null when the dialog is closed).
+let editingBook = null;
+
+// The rating shown in the dialog. It is only copied to the book on Save.
+let editRating = 0;
+
+// Draws the five star buttons in the dialog for the current editRating.
+function renderEditStars() {
+  editRatingStars.replaceChildren();
+  for (let star = 1; star <= 5; star++) {
+    const starButton = document.createElement("button");
+    starButton.type = "button";
+    starButton.textContent = star <= editRating ? "★" : "☆";
+    starButton.setAttribute("aria-label", "Rate " + star + (star === 1 ? " star" : " stars"));
+    starButton.setAttribute("aria-pressed", editRating === star ? "true" : "false");
+    starButton.addEventListener("click", function () {
+      // Clicking the current rating again clears it.
+      editRating = editRating === star ? 0 : star;
+      renderEditStars();
+      // The stars were redrawn, so put focus back on the one that was clicked.
+      editRatingStars.children[star - 1].focus();
+    });
+    editRatingStars.appendChild(starButton);
+  }
+}
+
+// Stars are only shown while the status in the dialog is Read.
+function updateEditRatingRow() {
+  editRatingRow.hidden = editStatus.value !== "finished";
+}
+
+editStatus.addEventListener("change", updateEditRatingRow);
+
+function openEditDialog(book) {
+  editingBook = book;
+  editTitle.value = book.title;
+  editAuthor.value = book.author;
+  editReader.value = book.reader;
+  editOwnership.value = book.ownership;
+  editStatus.value = book.status;
+  editRating = book.rating || 0;
+  renderEditStars();
+  updateEditRatingRow();
+  editDialog.showModal();
+  editTitle.focus();
+}
+
+editForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+  if (!editingBook) return;
+
+  const title = editTitle.value.trim();
+  if (title === "") {
+    editTitle.focus();
+    return;
+  }
+
+  editingBook.title = title;
+  editingBook.author = editAuthor.value.trim();
+  editingBook.reader = editReader.value;
+  editingBook.ownership = editOwnership.value;
+  editingBook.status = editStatus.value;
+  // Stars are only editable for Read books; other books keep their old rating.
+  if (editStatus.value === "finished") editingBook.rating = editRating;
+
+  saveBooks(books);
+  editDialog.close();
+  render();
+});
+
+document.getElementById("edit-cancel").addEventListener("click", function () {
+  editDialog.close();
+});
+
+// Closing the dialog any way (Save, Cancel or Esc) ends the edit.
+editDialog.addEventListener("close", function () {
+  editingBook = null;
 });
 
 render();
