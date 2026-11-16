@@ -5,14 +5,42 @@ const STORAGE_KEY = "readinglist.books";
 // Display names only. The stored values stay "me" and "daughter".
 const READER_NAMES = { me: "Miona", daughter: "Sena" };
 
+const BACKUP_KEY = "readinglist.books.backup";
+
+// Fields added after the first version, with the value old books get.
+const NEW_BOOK_FIELDS = { ownership: "", startDate: "", endDate: "" };
+
+// Fills in any missing new fields on old books. Safe to run on every load:
+// it only adds fields that are missing and never changes other fields.
+function migrateBooks(list) {
+  return list.map(function (book) {
+    if (book === null || typeof book !== "object") return book;
+    const upgraded = Object.assign({}, book);
+    Object.keys(NEW_BOOK_FIELDS).forEach(function (field) {
+      if (!(field in upgraded)) upgraded[field] = NEW_BOOK_FIELDS[field];
+    });
+    return upgraded;
+  });
+}
+
 // Read the saved books. Falls back to an empty list if nothing is saved,
 // the saved data is not valid JSON, or localStorage is unavailable.
 function loadBooks() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === null) return [];
+
+    // Keep a copy of the original text before the first upgrade (only if no backup exists yet).
+    try {
+      if (localStorage.getItem(BACKUP_KEY) === null) {
+        localStorage.setItem(BACKUP_KEY, saved);
+      }
+    } catch (error) {
+      // A failed backup must not stop the books from loading.
+    }
+
     const parsed = JSON.parse(saved);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? migrateBooks(parsed) : [];
   } catch (error) {
     return [];
   }
