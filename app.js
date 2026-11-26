@@ -430,8 +430,26 @@ Array.from(readerSelect.options).forEach(function (option) {
 document.getElementById("intro").textContent =
   "Books for " + READER_NAMES.me + " and " + READER_NAMES.daughter;
 
+// Shows or hides a save-error message (text set with textContent).
+const SAVE_ERROR_TEXT =
+  "Sorry, this book couldn't be saved. Your browser's storage may be full or blocked. Please try again.";
+
+function showSaveError(element) {
+  element.textContent = SAVE_ERROR_TEXT;
+  element.hidden = false;
+}
+
+function hideSaveError(element) {
+  element.textContent = "";
+  element.hidden = true;
+}
+
+const addError = document.getElementById("add-error");
+const editError = document.getElementById("edit-error");
+
 addForm.addEventListener("submit", function (event) {
   event.preventDefault();
+  hideSaveError(addError);
 
   const title = titleInput.value.trim();
   if (title === "") {
@@ -453,7 +471,12 @@ addForm.addEventListener("submit", function (event) {
     note: ""
   });
 
-  saveBooks(books);
+  // If saving fails, take the book back out and keep the typed text so nothing is lost.
+  if (!saveBooks(books)) {
+    books.pop();
+    showSaveError(addError);
+    return;
+  }
   render();
 
   addForm.reset();
@@ -616,6 +639,7 @@ editEnd.addEventListener("input", function () {
 
 function openEditDialog(book) {
   editingBook = book;
+  hideSaveError(editError);
   editTitle.value = book.title;
   editAuthor.value = book.author;
   editReader.value = book.reader;
@@ -655,6 +679,9 @@ editForm.addEventListener("submit", function (event) {
     return;
   }
 
+  // Keep a copy so the changes can be undone if saving fails.
+  const previous = Object.assign({}, editingBook);
+
   editingBook.title = title;
   editingBook.startDate = startDate;
   editingBook.endDate = endDate;
@@ -667,7 +694,12 @@ editForm.addEventListener("submit", function (event) {
   // Stars are only editable for Read books; other books keep their old rating.
   if (editStatus.value === "finished") editingBook.rating = editRating;
 
-  saveBooks(books);
+  // If saving fails, undo the changes and keep the dialog open with a message.
+  if (!saveBooks(books)) {
+    Object.assign(editingBook, previous);
+    showSaveError(editError);
+    return;
+  }
   editDialog.close();
   render();
 });
